@@ -1,4 +1,4 @@
-import base64, os, scipy
+import base64, os, scipy, numpy
 import streamlit as st
 
 from coordinate_constant import streamlit, historyfile, sample_rate, timer, \
@@ -6,23 +6,36 @@ from coordinate_constant import streamlit, historyfile, sample_rate, timer, \
 from coordinate_constant import temp as te_mp
 
 
+def dehi(ret=False) -> str or None :
+    hf = historyfile
+    while os.path.isfile(hf):
+        if not ret:
+            os.rename(hf, te_mp + hf)
+        hf = '_' + hf
+    if ret:
+        return hf
+
+
 def main_loop_strl():
     def rendhtmlaudio():
         html: str = ''
-        histlist: list = readfile(file=historyfile)
-        for ih in range(0, len(histlist), 2):
-            out___mp4, b64 = histlist[ih], histlist[ih + 1]
-            html += f"""<h5>{out___mp4}</h5>
-            <audio controls>
-                <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-            </audio>
-            <a download={out___mp4} href="data:audio/mp3;base64,{b64}">Download</a>
-            """
-        return html
+        hf = historyfile
 
-    def dehi():
-        if os.path.isfile(historyfile):
-            os.rename(historyfile, te_mp + historyfile)
+        while os.path.isfile(hf):
+            histlist: list = list(readfile(file=hf))
+            assert len(histlist) == 2
+            aar = numpy.frombuffer(histlist[0])  # https://stackoverflow.com/questions/6485790/numpy-array-to-base64-and-back-to-numpy-array-python
+            out___mp4_ = histlist[1]
+            # TODO aar is now numpy array, not base64 code so html code below will fail
+            html += f"""<h5>{out___mp4_}</h5>
+            <audio controls>
+                <source src="data:audio/mp3;base64,{aar}" type="audio/mp3">
+            </audio>
+            <a download={out___mp4_} href="data:audio/mp3;base64,{aar}">Download</a>
+            """
+            hf = '_' + hf
+
+        return html
 
     st.title("Sinh nhạc")
     # st.subheader("This app allows you to find threshold to convert color Image to binary Image!")
@@ -106,9 +119,14 @@ def main_loop(aud___in: str, genre, voice_preset: str = "v2/en_speaker_5", lengt
     if streamlit:
         data = readfile(file=out___mp4_, mod="rb")
         st.audio(audio_array, sample_rate=sample_rate, format='wav')
-        # st.audio(data, format='wav')
-        b64 = base64.b64encode(data).decode()
-        readfile(file=historyfile, mod="a", cont=f'{aud___in}: \n{b64}\n')  # ghi lại lịch sử dưới dạng base64 vào file trên local
+        hf: str = dehi(ret=True)
+        assert hf is not None
+        # numpy.savetxt(hf, audio_array)  # ghi lại numpy array vào file làm lịch sử trên local
+
+        s = base64.b64encode(audio_array)  # https://stackoverflow.com/questions/6485790/numpy-array-to-base64-and-back-to-numpy-array-python
+        aar = base64.decodebytes(s)  # audio_array in byte
+        readfile(file=hf, mod="w", cont=[aar, out___mp4_])  # ghi lại nội dung file tải lên vào clean_names.wav
+
         with placeholder.container():
             st.write(aud___in)
             st.download_button(
