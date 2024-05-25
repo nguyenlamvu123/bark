@@ -11,7 +11,7 @@ temp: str = 'temp'  # file temp ban đầu khi chuyển từng đoạn thoại r
 historyfile: str = "hist.txt"
 debug: bool = True
 
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
+device = "cpu"  # "cuda:0" if torch.cuda.is_available() else "cpu"
 
 processor = AutoProcessor.from_pretrained("suno/bark")
 model = BarkModel.from_pretrained("suno/bark")
