@@ -81,8 +81,8 @@ logger = logging.getLogger(__name__)
 CUR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
-default_cache_dir = os.path.join(os.path.expanduser("~"), ".cache")
-CACHE_DIR = os.path.join(os.getenv("XDG_CACHE_HOME", default_cache_dir), "suno", "bark_v0")
+# default_cache_dir = os.path.join(os.path.expanduser("~"), ".cache")
+CACHE_DIR = os.path.join(CUR_PATH, "loa_mod")
 
 
 def _cast_bool_env_var(s):
@@ -241,7 +241,10 @@ def _load_model(ckpt_path, device, use_small=False, model_type="text"):
     del checkpoint, state_dict
     _clear_cuda_cache()
     if model_type == "text":
-        tokenizer = BertTokenizer.from_pretrained("bert-base-multilingual-cased")
+        tokenizer = BertTokenizer.from_pretrained(
+            "bert-base-multilingual-cased",
+            cache_dir=os.path.join(CACHE_DIR, ".huggingface", "hub")
+        )
         return {
             "model": model,
             "tokenizer": tokenizer,
