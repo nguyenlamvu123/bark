@@ -42,7 +42,11 @@ def readfile(file="uid.txt", mod="r", cont=None, jso: bool = False):
 
 
 def Py_Transformers(aud___in, voice_preset):
-    inputs = processor(aud___in, voice_preset=voice_preset)
+    print("*")
+    inputs = processor(
+        aud___in,
+        # voice_preset=voice_preset
+    )
     audio_array = model.generate(
         **inputs.to(device),
         # num_beams=4,
@@ -53,11 +57,24 @@ def Py_Transformers(aud___in, voice_preset):
 
 
 def Py_Bark(aud___in, voice_preset):
-    return generate_audio(aud___in, history_prompt=voice_preset)
+    print("#")
+    return generate_audio(
+        aud___in,
+        # text_temp=0.3,
+        # waveform_temp=0.3,
+        # output_full=True,  # AttributeError: 'tuple' object has no attribute 'dtype'
+        # history_prompt=voice_preset
+    )
 
 
 if __name__ == '__main__':
     from scipy.io.wavfile import write as write_wav
 
-    audio_array = Py_Bark("♪ one two three four five six lalala ♪", "v2/en_speaker_5")
-    write_wav("bark_generation.wav", SAMPLE_RATE, audio_array)
+    for sen in (
+            "♪one two three four five six lalala♪",
+            "♪ one two three four five six lalala ♪",
+            "♪  one two three four five six lalala  ♪",
+    ):
+        for i in range(3):
+            audio_array = Py_Bark(sen, "v2/en_speaker_5")
+            write_wav(f"{sen}__________{i}.wav", SAMPLE_RATE, audio_array)
