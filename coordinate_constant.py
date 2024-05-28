@@ -1,14 +1,15 @@
-import torch, os, json
+import torch, json, os, requests, time
+from functools import wraps
 from transformers import AutoProcessor, BarkModel
 from bark import SAMPLE_RATE, generate_audio, preload_models
-
 import nltk  # we'll use this to split into sentences
 import numpy as np
 
 
-streamlit: bool = True
+streamlit: bool = False
 temp: str = 'temp'  # file temp ban đầu khi chuyển từng đoạn thoại ra audio
 historyfile: str = "hist.txt"
+debug: bool = True
 
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -19,6 +20,18 @@ model = model.to(device)
 sample_rate = model.generation_config.sample_rate
 
 preload_models()
+
+
+def timer(func):  # @timer
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        if debug:
+            print(f"Execution time of {func.__name__}: {end - start} seconds")
+        return result
+    return wrapper
 
 
 def readfile(file="uid.txt", mod="r", cont=None, jso: bool = False):
@@ -52,9 +65,10 @@ def Py_Transformers_(aud___in, voice_preset, length_penalty=1.):
     )
     audio_array = model.generate(
         **inputs.to(device),
+        # length_penalty=length_penalty,
         # num_beams=4,
-        # temperature=0.5,
-        # semantic_temperature=0.8,
+        # # temperature=0.5,
+        # # semantic_temperature=0.8,
     )
     return audio_array.cpu().numpy().squeeze()
 
@@ -115,5 +129,5 @@ if __name__ == '__main__':
             "♪ Imagination, life is your creation. ♪",
     ):
         for i in range(3):
-            audio_array = Py_Bark_(sen, "v2/en_speaker_5")
+            audio_array = Py_Bark(sen, "v2/en_speaker_5")
             write_wav(f"{sen}__________{i}.wav", SAMPLE_RATE, audio_array)
