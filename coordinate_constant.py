@@ -2,6 +2,9 @@ import torch, os, json
 from transformers import AutoProcessor, BarkModel
 from bark import SAMPLE_RATE, generate_audio, preload_models
 
+import nltk  # we'll use this to split into sentences
+import numpy as np
+
 
 streamlit: bool = True
 temp: str = 'temp'  # file temp ban đầu khi chuyển từng đoạn thoại ra audio
@@ -41,8 +44,8 @@ def readfile(file="uid.txt", mod="r", cont=None, jso: bool = False):
                 json.dump(cont, fil_e, indent=2, ensure_ascii=False)
 
 
-def Py_Transformers(aud___in, voice_preset):
-    print("*")
+def Py_Transformers_(aud___in, voice_preset, length_penalty=1.):
+    print(f"*{aud___in}")
     inputs = processor(
         aud___in,
         # voice_preset=voice_preset
@@ -56,8 +59,8 @@ def Py_Transformers(aud___in, voice_preset):
     return audio_array.cpu().numpy().squeeze()
 
 
-def Py_Bark(aud___in, voice_preset):
-    print("#")
+def Py_Bark_(aud___in, voice_preset):
+    print(f"#{aud___in}")
     return generate_audio(
         aud___in,
         # text_temp=0.3,
@@ -67,6 +70,37 @@ def Py_Bark(aud___in, voice_preset):
     )
 
 
+def Py_Transformers(aud___in, voice_preset, length_penalty=1.):
+    silence = np.zeros(int(0.25 * SAMPLE_RATE))
+    sentences = nltk.sent_tokenize(aud___in.replace('♪', ''))
+
+    pieces = []
+    for sentence in sentences:
+        sentence = f'♪ {sentence} ♪'
+        print(f'#{sentence}')
+        inputs = processor(sentence)
+        audio_array = model.generate(
+            **inputs.to(device),
+        )
+        pieces += [audio_array.cpu().numpy().squeeze(), silence.copy()]
+    return np.concatenate(pieces)
+
+
+def Py_Bark(aud___in, voice_preset):
+    silence = np.zeros(int(0.25 * SAMPLE_RATE))
+    sentences = nltk.sent_tokenize(aud___in.replace('♪', ''))
+
+    pieces = []
+    for sentence in sentences:
+        sentence = f'♪ {sentence} ♪'
+        print(f'#{sentence}')
+        audio_array = generate_audio(
+            sentence,
+        )
+        pieces += [audio_array, silence.copy()]
+    return np.concatenate(pieces)
+
+
 if __name__ == '__main__':
     from scipy.io.wavfile import write as write_wav
 
@@ -74,7 +108,12 @@ if __name__ == '__main__':
             "♪one two three four five six lalala♪",
             "♪ one two three four five six lalala ♪",
             "♪  one two three four five six lalala  ♪",
+
+            "♪ I'm a Barbie girl, in the Barbie world ♪",
+            "♪ Life in plastic, it's fantastic. ♪",
+            "♪You can brush my hair, undress me everywhere.♪",
+            "♪ Imagination, life is your creation. ♪",
     ):
         for i in range(3):
-            audio_array = Py_Bark(sen, "v2/en_speaker_5")
+            audio_array = Py_Bark_(sen, "v2/en_speaker_5")
             write_wav(f"{sen}__________{i}.wav", SAMPLE_RATE, audio_array)
