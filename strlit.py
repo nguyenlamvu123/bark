@@ -1,8 +1,8 @@
 import base64, os, scipy
 import streamlit as st
 
-from coordinate_constant import streamlit, historyfile, sample_rate, \
-    readfile, Py_Transformers, Py_Bark, Py_Bark_
+from coordinate_constant import streamlit, historyfile, sample_rate, timer, \
+    readfile, Py_Transformers, Py_Bark
 from coordinate_constant import temp as te_mp
 
 
@@ -93,28 +93,30 @@ def main_loop_strl():
     main_loop(aud___in, genre)
 
 
-def main_loop(aud___in: str, genre, voice_preset: str = "v2/en_speaker_5"):
+@timer
+def main_loop(aud___in: str, genre, voice_preset: str = "v2/en_speaker_5", length_penalty=1., out___mp4_=None):
     placeholder = st.empty() if streamlit else None
 
     st.write(aud___in)
-    audio_array = Py_Transformers(aud___in, voice_preset) if genre == "Python Transformers" \
+    audio_array = Py_Transformers(aud___in, voice_preset, length_penalty=length_penalty) if genre == "Python Transformers" \
         else Py_Bark(aud___in, voice_preset)
 
-    out___mp4_ = f"{aud___in[:30].replace(' ', '')}.wav"
+    if out___mp4_ is None: out___mp4_ = f"{aud___in[:30].replace(' ', '')}.wav"
     scipy.io.wavfile.write(out___mp4_, rate=sample_rate, data=audio_array)
-    data = readfile(file=out___mp4_, mod="rb")
-    st.audio(audio_array, sample_rate=sample_rate, format='wav')
-    # st.audio(data, format='wav')
-    b64 = base64.b64encode(data).decode()
-    readfile(file=historyfile, mod="a", cont=f'{aud___in}: \n{b64}\n')  # ghi lại lịch sử dưới dạng base64 vào file trên local
-    with placeholder.container():
-        st.write(aud___in)
-        st.download_button(
-            label="Download",
-            data=data,
-            file_name=out___mp4_,
-            mime='wav',
-        )
+    if streamlit:
+        data = readfile(file=out___mp4_, mod="rb")
+        st.audio(audio_array, sample_rate=sample_rate, format='wav')
+        # st.audio(data, format='wav')
+        b64 = base64.b64encode(data).decode()
+        readfile(file=historyfile, mod="a", cont=f'{aud___in}: \n{b64}\n')  # ghi lại lịch sử dưới dạng base64 vào file trên local
+        with placeholder.container():
+            st.write(aud___in)
+            st.download_button(
+                label="Download",
+                data=data,
+                file_name=out___mp4_,
+                mime='wav',
+            )
 
 
 if __name__ == '__main__':
