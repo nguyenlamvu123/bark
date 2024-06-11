@@ -2,7 +2,7 @@ import base64, os, scipy
 import streamlit as st
 
 from coordinate_constant import streamlit, historyfile, sample_rate, \
-    readfile, Py_Transformers, Py_Bark
+    readfile, Py_Transformers, Py_Bark, Py_Bark_
 from coordinate_constant import temp as te_mp
 
 
@@ -100,10 +100,11 @@ def main_loop(aud___in: str, genre, voice_preset: str = "v2/en_speaker_5"):
     audio_array = Py_Transformers(aud___in, voice_preset) if genre == "Python Transformers" \
         else Py_Bark(aud___in, voice_preset)
 
-    out___mp4_ = f"{aud___in.replace(' ', '')}.wav"
+    out___mp4_ = f"{aud___in[:30].replace(' ', '')}.wav"
     scipy.io.wavfile.write(out___mp4_, rate=sample_rate, data=audio_array)
     data = readfile(file=out___mp4_, mod="rb")
-    st.audio(data, format='wav')
+    st.audio(audio_array, sample_rate=sample_rate, format='wav')
+    # st.audio(data, format='wav')
     b64 = base64.b64encode(data).decode()
     readfile(file=historyfile, mod="a", cont=f'{aud___in}: \n{b64}\n')  # ghi lại lịch sử dưới dạng base64 vào file trên local
     with placeholder.container():
