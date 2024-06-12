@@ -67,8 +67,8 @@ def Py_Transformers_(aud___in, voice_preset, length_penalty=1.):
         **inputs.to(device),
         # length_penalty=length_penalty,
         # num_beams=4,
-        # # temperature=0.5,
-        # # semantic_temperature=0.8,
+        temperature=0.1,
+        semantic_temperature=0.1,
     )
     return audio_array.cpu().numpy().squeeze()
 
