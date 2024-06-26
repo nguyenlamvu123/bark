@@ -8,10 +8,17 @@ from strlit import main_loop
 def validate(request):
    if request.method == 'POST':
       aud___in = request.POST.get("aud___in")
-      # if int(mus_flag) == 1: aud___in = f'♪ {aud___in} ♪'
       genre = request.POST.get("genre")
-      length_penalty = request.POST.get("length_penalty", "1.")
-      length_penalty = float(length_penalty)
       out___mp4_ = request.POST.get("output_location")
-      main_loop(aud___in, genre, length_penalty=length_penalty, out___mp4_=out___mp4_)
+      max_length = request.POST.get("max_length")
+      num_return_sequences = request.POST.get("num_return_sequences")
+      num_beams = request.POST.get("num_beams")
+      main_loop(
+         aud___in,
+         genre,
+         out___mp4_=out___mp4_,
+         max_length=int(max_length),
+         num_return_sequences=int(num_return_sequences),
+         num_beams=int(num_beams),
+      )
       return HttpResponse('ok')
