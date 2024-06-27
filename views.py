@@ -13,12 +13,16 @@ def validate(request):
       max_length = request.POST.get("max_length")
       num_return_sequences = request.POST.get("num_return_sequences")
       num_beams = request.POST.get("num_beams")
-      main_loop(
+      text_temp = request.POST.get("text_temp")
+      waveform_temp = request.POST.get("waveform_temp")
+      output_s = main_loop(
          aud___in,
          genre,
          out___mp4_=out___mp4_,
          max_length=int(max_length),
          num_return_sequences=int(num_return_sequences),
          num_beams=int(num_beams),
+         text_temp=float(text_temp),
+         waveform_temp=float(waveform_temp),
       )
-      return HttpResponse('ok')
+      return HttpResponse(str(output_s))
