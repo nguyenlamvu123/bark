@@ -14,10 +14,10 @@ import nltk  # we'll use this to split into sentences
 import numpy as np
 
 
-streamlit: bool = False
+streamlit: bool = True
 temp: str = 'temp'  # file temp ban đầu khi chuyển từng đoạn thoại ra audio
 historyfile: str = "hist.txt"
-debug: bool = True
+debug: bool = False 
 temperature = 0.1
 max_length = 100
 num_return_sequences = 1
@@ -127,8 +127,12 @@ def apply_nltk(func):  # @apply_nltk
 
 @apply_nltk
 @timer
-def Py_Transformers_(aud___in, voice_preset=None, length_penalty=1.):
-    print(f"*{aud___in}")
+def Py_Transformers(
+        aud___in,
+        # voice_preset=None,
+        # length_penalty=1.
+):
+    # print(f"*{aud___in}")
     inputs = processor(
         f'♪ {aud___in} ♪',
         # voice_preset=voice_preset
@@ -145,8 +149,11 @@ def Py_Transformers_(aud___in, voice_preset=None, length_penalty=1.):
 
 @apply_nltk
 @timer
-def Py_Bark_(aud___in, voice_preset=None):
-    print(f"#########{aud___in}")
+def Py_Bark(
+        aud___in,
+        # voice_preset=None
+):
+    # print(f"#########{aud___in}")
     return generate_audio(
         f'♪ {aud___in} ♪',
         # text_temp=0.3,
@@ -154,33 +161,6 @@ def Py_Bark_(aud___in, voice_preset=None):
         # output_full=True,  # AttributeError: 'tuple' object has no attribute 'dtype'
         # history_prompt=voice_preset
     )
-
-
-def Py_Transformers(aud___in, voice_preset, length_penalty=1.):
-    silence = np.zeros(int(0.25 * SAMPLE_RATE))
-    sentences = nltk.sent_tokenize(aud___in.replace('♪', ''))
-
-    pieces = []
-    for sentence in sentences:
-        sentence = f'♪ {sentence} ♪'
-        print(f'#{sentence}')
-        inputs = processor(sentence)
-        audio_array = model.generate(**inputs.to(device))
-        pieces += [audio_array.cpu().numpy().squeeze(), silence.copy()]
-    return np.concatenate(pieces)
-
-
-def Py_Bark(aud___in, voice_preset):
-    silence = np.zeros(int(0.25 * SAMPLE_RATE))
-    sentences = nltk.sent_tokenize(aud___in.replace('♪', ''))
-
-    pieces = []
-    for sentence in sentences:
-        sentence = f'♪ {sentence} ♪'
-        print(f'#{sentence}')
-        audio_array = generate_audio(sentence)
-        pieces += [audio_array, silence.copy()]
-    return np.concatenate(pieces)
 
 
 def Py_genetext(
@@ -238,5 +218,5 @@ if __name__ == '__main__':
                 ]),
             ])])
             print(f'{i}______{aud___in}')
-            audio_array = Py_Bark_(aud___in, "v2/en_speaker_5")
+            audio_array = Py_Bark(aud___in, "v2/en_speaker_5")
             write_wav(f"{i}.wav", SAMPLE_RATE, audio_array)
