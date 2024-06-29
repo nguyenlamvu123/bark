@@ -17,7 +17,10 @@ import numpy as np
 streamlit: bool = True
 temp: str = 'temp'  # file temp ban đầu khi chuyển từng đoạn thoại ra audio
 historyfile: str = "hist.txt"
-debug: bool = False 
+debug: bool = False
+
+# text_temp = 0.8
+# waveform_temp = 0.9
 temperature = 0.1
 max_length = 100
 num_return_sequences = 1
@@ -106,6 +109,14 @@ def readfile(file="uid.txt", mod="r", cont=None, jso: bool = False):
                 json.dump(cont, fil_e, indent=2, ensure_ascii=False)
 
 
+def remove_numerical_order(line: str) -> str:
+    line = line.strip()
+    ind: int = line.find('.')
+    if ind == -1:
+        return line
+    return line[ind + 1 :].strip() if line[:ind].isnumeric() else line
+
+
 def apply_nltk(func):  # @apply_nltk
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -151,13 +162,16 @@ def Py_Transformers(
 @timer
 def Py_Bark(
         aud___in,
+        text_temp=0.8,
+        waveform_temp=0.9,
         # voice_preset=None
 ):
     # print(f"#########{aud___in}")
     return generate_audio(
         f'♪ {aud___in} ♪',
-        # text_temp=0.3,
-        # waveform_temp=0.3,
+        text_temp=text_temp,
+        waveform_temp=waveform_temp,
+        silent=True,
         # output_full=True,  # AttributeError: 'tuple' object has no attribute 'dtype'
         # history_prompt=voice_preset
     )
@@ -187,7 +201,6 @@ def Py_genetext(
 
 if __name__ == '__main__':
     from scipy.io.wavfile import write as write_wav
-
     for sen in (
             # " how long have you troubled me, Huong Ly ",
             # "I'm a Barbie girl, in the Barbie world",
