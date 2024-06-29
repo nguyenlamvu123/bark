@@ -140,20 +140,17 @@ def apply_nltk(func):  # @apply_nltk
 @timer
 def Py_Transformers(
         aud___in,
-        # voice_preset=None,
-        # length_penalty=1.
+        tempe_py=0.8,
+        semantic_temperature=0.8,
 ):
     # print(f"*{aud___in}")
     inputs = processor(
         f'♪ {aud___in} ♪',
-        # voice_preset=voice_preset
     )
     audio_array = model.generate(
         **inputs.to(device),
-        # # length_penalty=length_penalty,
-        # # num_beams=4,
-        # temperature=0.1,
-        # semantic_temperature=0.1,
+        temperature=tempe_py,  # 0.8
+        semantic_temperature=semantic_temperature,  # With a semantic_, coarse_, fine_ prefix, they will be input for the generate method of the semantic, coarse and fine respectively. It has the priority over the keywords without a prefix  # https://huggingface.co/docs/transformers/main/en/model_doc/bark
     )
     return audio_array.cpu().numpy().squeeze()
 
